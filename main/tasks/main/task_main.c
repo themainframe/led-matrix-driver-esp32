@@ -4,10 +4,12 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include "config.h"
 #include "include/task_main.h"
+#include "driver/gpio.h"
+#include "config.h"
 #include "wifi.h"
-#include "events.h"
+#include "pins.h"
+#include "is32.h"
 
 // Log Tag
 static const char* TAG = "Main";
@@ -18,15 +20,22 @@ static const char* TAG = "Main";
  */
 void task_main(void* params)
 {
-    // Create the event group for Wi-Fi state change events
-    sys_event_group = xEventGroupCreate();
+    ESP_LOGI(TAG, "Main task started");
 
     // Start the Wi-Fi if possible
-    wifi_init();
+    // wifi_init();
+    is32_init();
+
+    // Set up the heartbeat LED
+    gpio_pad_select_gpio(PIN_LED);
+    gpio_set_direction(PIN_LED, GPIO_MODE_OUTPUT_OD);
 
     // Spin and wait here
-    while (true)
+    for (uint i = 0; ; i ++)
     {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(750 / portTICK_PERIOD_MS);
+        gpio_set_level(PIN_LED, i % 2 == 0);
+        is32_write_reg(IS32_ADDRESS_A, IS32_REG_CONFIG, IS32_SSD_RUN);
+        is32_write_reg(IS32_ADDRESS_A, IS32_REG_GLOBAL_CURRENT_CONTROL, 0xFF);
     }
 }
