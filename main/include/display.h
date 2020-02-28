@@ -12,6 +12,9 @@
 #define IS32_WIDTH 8
 #define IS32_HEIGHT 6
 
+// Define the number of chips used to cover the whole display
+#define IS32_CHIPS MAX((DISPLAY_WIDTH/IS32_WIDTH), (DISPLAY_HEIGHT/IS32_HEIGHT))
+
 // Define a type for the state of a single LED
 typedef struct {
 
@@ -21,7 +24,7 @@ typedef struct {
 
     // Whether the LED should be ON or OFF
     bool on;
-
+    
     // Flags that indicate shorted/open-circuit LEDs
     bool is_shorted;
     bool is_open;

@@ -35,7 +35,8 @@ void task_main(void* params)
     {
         vTaskDelay(750 / portTICK_PERIOD_MS);
         gpio_set_level(PIN_LED, i % 2 == 0);
-        is32_write_reg(IS32_ADDRESS_A, IS32_REG_CONFIG, IS32_SSD_RUN);
-        is32_write_reg(IS32_ADDRESS_A, IS32_REG_GLOBAL_CURRENT_CONTROL, 0xFF);
+
+        // is32_write_reg(IS32_ADDRESS_A, IS32_REG_CONFIG, IS32_SSD_RUN);
+        // is32_write_reg(IS32_ADDRESS_A, IS32_REG_GLOBAL_CURRENT_CONTROL, 0xFF);
     }
 }
