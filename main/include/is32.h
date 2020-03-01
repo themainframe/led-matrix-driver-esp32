@@ -24,6 +24,8 @@
 // Matrix control registers
 #define IS32_REG_LED_ON_OFF_START 0x0000
 #define IS32_REG_LED_ON_OFF_END 0x0017
+#define IS32_REG_PWM_START 0x0100
+#define IS32_REG_PWM_END 0x01BF
 
 // IS32 Pages
 typedef enum {
@@ -71,7 +73,8 @@ typedef enum {
 
 // Procedures
 void is32_init();
-void is32_select_page(is32_addr_t addr, is32_page_t page, bool use_cache);
+bool is32_select_page(is32_addr_t addr, is32_page_t page, bool use_cache);
 bool is32_write_reg(is32_addr_t addr, uint16_t reg, uint8_t value);
+bool is32_write_seq(is32_addr_t addr, uint16_t start_reg, const uint8_t *data, uint length);
 
 #endif

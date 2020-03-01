@@ -1,5 +1,8 @@
 {
     "files.associations": {
+        "display.h": "c",
+        "__string": "c",
+        "*.ipp": "c"
     },
     "python.pythonPath": "/usr/local/bin/python3"
 }

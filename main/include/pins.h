@@ -8,7 +8,7 @@
 // IS32 Control Lines
 #define PIN_SCL 22
 #define PIN_SDA 21
-#define PIN_SHUTDOWN 27
+#define PIN_SHUTDOWN 16
 
 // Button inputs
 #define PIN_BUTTON_A 19
