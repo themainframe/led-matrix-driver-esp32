@@ -32,7 +32,7 @@ is32_addr_t chip_addrs[IS32_CHIPS] = {
 /**
  * Initialise the IS32 chips that make up the display.
  */
-void display_init()
+void display_init(int gcr)
 {
     // Hardware shutdown control
     gpio_pad_select_gpio(PIN_SHUTDOWN);
@@ -50,7 +50,7 @@ void display_init()
         is32_write_reg(chip_addrs[chip], IS32_REG_CONFIG, IS32_SSD_RUN | (chip == 0 ? IS32_SYNC_MASTER : IS32_SYNC_SLAVE));
 
         // Set the GCR
-        is32_write_reg(chip_addrs[chip], IS32_REG_GLOBAL_CURRENT_CONTROL, 0xff);
+        is32_write_reg(chip_addrs[chip], IS32_REG_GLOBAL_CURRENT_CONTROL, gcr);
 
     }
 }

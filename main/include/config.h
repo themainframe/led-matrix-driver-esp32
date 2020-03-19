@@ -4,8 +4,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+// Config key names
 #define CONFIG_WIFI_SSID "wifi_ssid"
 #define CONFIG_WIFI_PSK "wifi_psk"
+#define CONFIG_GCR "display_gcr"
 
 typedef struct {
     char* key;
@@ -21,6 +23,7 @@ extern size_t config_count;
 int config_load();
 int config_save();
 const char* config_get(const char* key);
+int config_get_int(const char* key);
 int config_set(const char* key, const char* value);
 
 #endif

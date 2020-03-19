@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -14,9 +15,12 @@
 // Log Tag
 static const char* TAG = "Main";
 
+// Buffer used for time text generation
+static char strftime_buf[64];
+
 /**
  * Main task.
- * Just serves as a heartbeat for now - flashing the status LED periodically.
+ * Updates the clock display once a second.
  */
 void task_main(void* params)
 {
@@ -28,20 +32,26 @@ void task_main(void* params)
 
     // Start the Wi-Fi if possible
     // wifi_init();
-    display_init();
-
-    char hex[5] = "0000";
+    display_init(config_get_int(CONFIG_GCR));
     display_t display;
 
-    // Spin and wait here
+    // Update the display once a second
     for (uint i = 0; ; i ++)
     {
-        display_fill(&display, 0, 0);
-        sprintf(hex, "%04X", i);
-        display_text(&display, 0, 0x10, hex);
-        display_update(&display);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        // Get the time
+        time_t now;
+        struct tm timeinfo;
+        time(&now);
+        localtime_r(&now, &timeinfo);
 
+        // Clear the display
+        display_fill(&display, 0, 0);
+        strftime(strftime_buf, sizeof(strftime_buf), "%H", &timeinfo);
+        display_text(&display, 0, i % 2 == 0 ? 0xffffffff : 0x77777777, strftime_buf);
+        strftime(strftime_buf, sizeof(strftime_buf), "%M", &timeinfo);
+        display_text(&display, 11, i % 2 == 0 ? 0xffffffff : 0x77777777, strftime_buf);
+        display_update(&display);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         gpio_set_level(PIN_LED, i % 2 == 0);
     }
 }

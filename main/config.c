@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdint.h>
 #include "esp_system.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -21,6 +22,12 @@ config_entry_t config[] = {
         .key = CONFIG_WIFI_PSK,
         .value = NULL,
         .default_value = "default_psk",
+        .is_dirty = false
+    },
+    {
+        .key = CONFIG_GCR,
+        .value = NULL,
+        .default_value = "255",
         .is_dirty = false
     }
 };
@@ -189,4 +196,17 @@ const char* config_get(const char* key)
     }
 
     return config_entry->value;
+}
+
+/**
+ * Retrieve a configuration value as an integer.
+ */
+int config_get_int(const char* key)
+{
+    const char* value = config_get(key);
+    if (!value) {
+        return -1;
+    }
+
+    return atoi(value);
 }

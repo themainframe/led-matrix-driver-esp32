@@ -85,6 +85,15 @@ static int cmd_gpio(int argc, char** argv)
 }
 
 /**
+ * Reset the system.
+ */
+static int cmd_reset(int argc, char** argv)
+{
+    esp_restart();
+    return 0;
+}
+
+/**
  * Initialise the console.
  */
 static void init_console()
@@ -184,6 +193,14 @@ void task_cli()
         .func = &cmd_gpio,
     };
     ESP_ERROR_CHECK(esp_console_cmd_register(&cmd_gpio_spec));
+
+    const esp_console_cmd_t cmd_reset_spec = {
+        .command = "reset",
+        .help = "Reset the system",
+        .hint = NULL,
+        .func = &cmd_reset,
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd_reset_spec));
 
     // Figure out if the terminal supports escape sequences
     printf("\nTXLED Command Interface.\nType 'help' to get the list of commands.\n\n");
