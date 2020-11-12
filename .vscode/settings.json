@@ -3,7 +3,27 @@
         "display.h": "c",
         "__string": "c",
         "*.ipp": "c",
-        "font_4x5.h": "c"
+        "font_4x5.h": "c",
+        "iterator": "c",
+        "__bit_reference": "c",
+        "__hash_table": "c",
+        "__split_buffer": "c",
+        "__tree": "c",
+        "array": "c",
+        "deque": "c",
+        "filesystem": "c",
+        "initializer_list": "c",
+        "ios": "c",
+        "list": "c",
+        "map": "c",
+        "set": "c",
+        "string": "c",
+        "string_view": "c",
+        "unordered_map": "c",
+        "unordered_set": "c",
+        "valarray": "c",
+        "vector": "c",
+        "ranges": "c"
     },
     "python.pythonPath": "/usr/local/bin/python3"
 }

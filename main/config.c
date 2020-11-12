@@ -80,6 +80,7 @@ int config_load()
 
         ESP_ERROR_CHECK(err);
         config[cfg_idx].value = malloc(value_size);
+        ESP_LOGI(TAG, "allocated space (%dB) for %s value @ %p", value_size, config[cfg_idx].key, config[cfg_idx].value);
 
         // Read the value
         err = nvs_get_str(flash_handle, config[cfg_idx].key, config[cfg_idx].value, &value_size);
@@ -133,8 +134,7 @@ int config_save()
 
     // Finished reading flash data, close the handle
     nvs_close(flash_handle);
-
-    return ESP_OK;
+    return 0;
 }
 
 /**
@@ -167,11 +167,13 @@ int config_set(const char* key, const char* value)
 
     // Free the previous value if one is present
     if (config_entry->value != NULL) {
+        ESP_LOGI(TAG, "freeing previous config value for %s @ %p", key, (void*)config_entry->value);
         free(config_entry->value);
     }
 
     // Allocate a new string and copy the new value into it
-    config_entry->value = malloc(strlen(value));
+    config_entry->value = malloc(strlen(value) + 1);
+    ESP_LOGI(TAG, "allocated space (%dB) for %s value @ %p", strlen(value) + 1, key, config_entry->value);
     strcpy(config_entry->value, value);
     config_entry->is_dirty = true;
 

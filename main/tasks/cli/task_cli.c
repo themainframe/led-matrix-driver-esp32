@@ -11,6 +11,7 @@
 #include "include/task_cli.h"
 #include "driver/gpio.h"
 #include "config.h"
+#include "wifi.h"
 
 static const char* TAG = "CLI";
 
@@ -89,6 +90,7 @@ static int cmd_gpio(int argc, char** argv)
  */
 static int cmd_reset(int argc, char** argv)
 {
+    wifi_stop();
     esp_restart();
     return 0;
 }

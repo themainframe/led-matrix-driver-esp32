@@ -2,11 +2,11 @@
 
 The display is arranged like this, with chip resposibility represented by #, @ and X
 
-    # # # # # # # # @ @ @ @ @ @ @ @ X X X X
-    # # # # # # # # @ @ @ @ @ @ @ @ X X X X
-    # # # # # # # # @ @ @ @ @ @ @ @ X X X X
-    # # # # # # # # @ @ @ @ @ @ @ @ X X X X
-    # # # # # # # # @ @ @ @ @ @ @ @ X X X X
+    # # # # # # # # @ @ @ @ @ @ @ @ X X X X X X X X
+    # # # # # # # # @ @ @ @ @ @ @ @ X X X X X X X X
+    # # # # # # # # @ @ @ @ @ @ @ @ X X X X X X X X
+    # # # # # # # # @ @ @ @ @ @ @ @ X X X X X X X X
+    # # # # # # # # @ @ @ @ @ @ @ @ X X X X X X X X
 
 */
 
@@ -78,14 +78,17 @@ void display_update(display_t* display)
 
                 uint chip_col = col - IS32_FIRST_COL(chip);
 
+                // Just use the lowest PWM byte and spread it to the other three
+                uint8_t pwm = (*display)[DISPLAY_WIDTH - 1 - col][row].pwm > 0xff ? 0xff : (*display)[DISPLAY_WIDTH - 1 - col][row].pwm & 0xff;
+
                 // Build a list of PWM bytes to write to the chip
-                chip_pwm[(chip_col * 2) + (row * 32)] = (*display)[col][row].pwm & 0xff;
-                chip_pwm[(chip_col * 2) + (row * 32) + 1] = ((*display)[col][row].pwm >> 8) & 0xff;
-                chip_pwm[(chip_col * 2) + (row * 32) + 16] = ((*display)[col][row].pwm >> 16) & 0xff;
-                chip_pwm[(chip_col * 2) + (row * 32) + 17] = ((*display)[col][row].pwm >> 24) & 0xff;
+                chip_pwm[(chip_col * 2) + (row * 32)] = pwm;
+                chip_pwm[(chip_col * 2) + (row * 32) + 1] = pwm;
+                chip_pwm[(chip_col * 2) + (row * 32) + 16] = pwm;
+                chip_pwm[(chip_col * 2) + (row * 32) + 17] = pwm;
 
                 // Build the on-off bytes
-                if ((*display)[col][row].on) {
+                if ((*display)[DISPLAY_WIDTH - 1 - col][row].on) {
                     chip_on_off[(chip_col / 4) + (row * 4)] |= (0b11 << ((chip_col % 4) * 2));
                     chip_on_off[(chip_col / 4) + (row * 4) + 2] |= (0b11 << ((chip_col % 4) * 2));
                 }
@@ -108,22 +111,9 @@ void display_update(display_t* display)
 }
 
 /**
- * Copy a PWM value across an entire display.
- */
-void display_fill(display_t* display, uint32_t pwm, bool on)
-{
-    for (uint col = 0; col < DISPLAY_WIDTH; col ++) {
-        for (uint row = 0; row < DISPLAY_HEIGHT; row ++) {
-            (*display)[col][row].pwm = pwm;
-            (*display)[col][row].on = on;
-        }
-    }
-}
-
-/**
  * Render text onto a display at a given x-coordinate with a given PWM intensity.
  */
-void display_text(display_t* display, uint x_pos, uint32_t pwm, const char* text)
+void display_text(display_t* display, int x_pos, uint32_t pwm, const char* text)
 {
     // For each char in the requested text
     for (int i = 0; i < strlen(text); i ++) {
@@ -150,5 +140,91 @@ void display_text(display_t* display, uint x_pos, uint32_t pwm, const char* text
         
         // 1-dot space between letters
         x_pos += 5;
+    }
+}
+
+/**
+ * Fill a rectangular area of the display with a given state.
+ */
+void display_rect(display_t* display, int x_pos, int y_pos, int width, int height, uint32_t pwm, bool on)
+{
+    for (int x = x_pos; x < x_pos + width; x ++) {
+        for (int y = y_pos; y < y_pos + height; y ++) {
+            
+            // Within bounds?
+            if (x < 0 || y < 0 || x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) {
+                continue;
+            }
+
+            (*display)[x][y].on = true;
+            (*display)[x][y].pwm = pwm;
+        }
+    }
+}
+
+/**
+ * Copy a rectangular section of one display state to another.
+ * Copying sections with the same source and destination is supported.
+ */
+void display_copy(const display_t* source, display_t* dest, int src_x_pos, int src_y_pos, int dest_x_pos, int dest_y_pos, int width, int height)
+{
+    ESP_LOGI(TAG, "copy: %p to %p (src: %d,%d, dst: %d,%d, size:%dby%d)", source, dest, src_x_pos, src_y_pos, dest_x_pos, dest_y_pos, width, height);
+    display_t* source_copy = malloc(sizeof(display_t));
+    memcpy(source_copy, source, sizeof(display_t));
+
+    for (int x = 0; x < width; x ++) {
+        for (int y = 0; y < height; y ++) {
+            
+            int src_x = x + src_x_pos;
+            int src_y = y + src_y_pos;
+
+            // Source within bounds?
+            if (src_x < 0 || src_y < 0 || src_x >= DISPLAY_WIDTH || src_y >= DISPLAY_HEIGHT) {
+                continue;
+            }
+
+            int dest_x = x + dest_x_pos;
+            int dest_y = y + dest_y_pos;
+
+            // Destination within bounds?
+            if (dest_x < 0 || dest_y < 0 || dest_x >=DISPLAY_WIDTH || dest_y >= DISPLAY_HEIGHT) {
+                continue;
+            }
+
+            (*dest)[dest_x][dest_y].on = (*source_copy)[src_x][src_y].on;
+            (*dest)[dest_x][dest_y].pwm = (*source_copy)[src_x][src_y].pwm;
+        }
+    }
+
+    free(source_copy);
+}
+
+/**
+ * Fill the entire display with a given pixel state.
+ */
+void display_fill(display_t* display, uint32_t pwm, bool on)
+{
+    display_rect(display, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, pwm, on);
+}
+
+/**
+ * Fill the display with a checkerboard pattern.
+ */
+void display_checkerboard(display_t* display, bool invert, uint32_t pwm)
+{
+    bool state = invert;
+    
+    for (int x = 0; x < DISPLAY_WIDTH; x ++) {
+
+        // If there are an even number of rows, invert after each row
+        if (DISPLAY_WIDTH % 2 == 0) {
+            state = !state;
+        }
+
+        for (int y = 0; y < DISPLAY_HEIGHT; y ++) {
+            state = !state;
+            (*display)[x][y].on = true;
+            (*display)[x][y].pwm = state ? pwm : 0;
+        }
     }
 }

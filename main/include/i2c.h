@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 // Cycle count delay for software I2C interface
-#define I2C_WAIT_CYCLES 250
+#define I2C_WAIT_CYCLES 25
 
 // Write/read bit value
 #define I2C_WRITE_BIT 0x00
